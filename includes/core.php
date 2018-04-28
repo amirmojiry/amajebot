@@ -1,8 +1,5 @@
 ﻿<?php
-define('BOT_TOKEN','507927064:AAHeHwzFzmjwyRto4QbIrW8XJuf2l_08X-4');
-define('API_URL', 'https://api.telegram.org/bot'.BOT_TOKEN.'/');
-define('ADMIN_ID', '90231041');
-define('SIGN', '🌍 @amajebot');
+require_once('defining.php');
 
 
 function MessageRequestJson($method, $parameters) {
@@ -59,16 +56,8 @@ function prosody() {
 	return $body; 
 }
 
-function baseUrl(){
-    return 'https://negahejahani.ir/';
-}
 
 
-function randomImage(){
-    $images = glob("images/*.{jpg,png}",GLOB_BRACE);
-    $randomImage = $images[array_rand($images)];
-    return baseUrl()."faranesh/f/".$randomImage;
-}
 
 
 ?>

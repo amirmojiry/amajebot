@@ -1,13 +1,5 @@
 <?php
-
-//database
-define('DB_HOST','localhost');
-define('DB_USER','cp29140_amajebot');
-define('DB_PASS','G17C%y+9K,T+');
-define('DB_NAME','cp29140_amajebot');
-
-
-
+require_once('defining.php');
 
 class Db {
 

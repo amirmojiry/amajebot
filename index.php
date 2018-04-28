@@ -1,5 +1,5 @@
 <?php
-
+require_once('defining.php');
 require_once('includes/core.php');
 require_once('includes/db.php');
 require_once ('includes/persian_date.class.php');
