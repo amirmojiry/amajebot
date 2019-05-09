@@ -1,13 +1,12 @@
 ﻿<?php
 require_once('defining.php');
 
-
-function MessageRequestJson($method, $parameters) {
+function message_request_json ($method, $parameters) {
 
   if (!$parameters) {
     $parameters = array();
   }
-  
+
   $parameters["method"] = $method;
 
   $handle = curl_init(API_URL);
@@ -17,10 +16,10 @@ function MessageRequestJson($method, $parameters) {
   curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($parameters));
   curl_setopt($handle, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
   $result = curl_exec($handle);
-  return $result; 
+  return $result;
 }
 
-function prosody() {
+function prosody () {
 	//set post variable
 	$url = 'http://prosody.ir/index.php?option=com_wrapper&view=wrapper&Itemid=29';
 	$post_data ['Lpart1'] = 'دارم از زلف سياهش گله چندان که مپرس';
@@ -45,19 +44,14 @@ function prosody() {
 	curl_setopt($handle, CURLOPT_HEADER, TRUE);
 	//execute POST
 	$result = curl_exec($handle);
-	
+
 	$header_size = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
 	$header = substr($result, 0, $header_size);
 	$body = substr($result, $header_size);
-	
+
 	//close connection
 	//curl_close($handle);
-	
-	return $body; 
+
+	return $body;
 }
-
-
-
-
-
 ?>

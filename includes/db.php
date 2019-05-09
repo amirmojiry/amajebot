@@ -1,110 +1,118 @@
 <?php
 require_once('defining.php');
 
-class Db {
+class Database {
+  private $_connection;
 
-  private $connection;
-  private static $db;
+  //store the single instance.
+  private static $_instance;
 
-
-
-  public static function getInstance($option = null){
-    if (self::$db == null){
-      self::$db = new Db($option);
+  /**
+  * Get an instance of the Database.
+  * @return Database
+  */
+  public static function getInstance ($option = null) {
+    if (self::$_instance == null) {
+      self::$_instance = new self();
     }
-
-    return self::$db;
+    return self::$_instance;
   }
 
-
-
-  public function __construct(){
-	  
-      $host = DB_HOST;
-      $user = DB_USER;
-      $pass = DB_PASS;
-      $name = DB_NAME;
-
-    $this->connection = new mysqli($host, $user, $pass, $name);
-    if ($this->connection->connect_error) {
-      echo "Connection failed: " . $this->connection->connect_error;
+  /**
+  * Constructor
+  */
+  public function __construct () {
+    $host_name = DB_HOST;
+    $username = DB_USER;
+    $password = DB_PASS;
+    $db_name = DB_NAME;
+    $this->_connection = new mysqli ($host_name, $username, $password, $db_name);
+    if (mysqli_connect_error()) {
+      echo "Connection failed: " . mysqli_connect_error();
       exit;
     }
-
-    $this->connection->query("SET NAMES 'utf8'");
+    $this ->_connection ->query ("SET NAMES 'utf8'");
   }
 
-
-
-  private function safeQuery(&$sql, $data){
-    foreach ($data as $key=>$value){
-      $value = $this->connection->real_escape_string($value);
+  /**
+  * Safe Query
+  * @param string $sql
+  * @param array $data
+  */
+  private function _safeQuery ( &$sql, $data) {
+    foreach ($data as $key => $value) {
+      $value = $this ->_connection ->real_escape_string ($value);
       $value = "'$value'";
-
-      $sql = str_replace(":$key", $value, $sql);
+      $sql = str_replace (":$key", $value, $sql);
     }
-
-    return $this->connection->query($sql);
+    return $this->_connection->query ($sql);
   }
 
-
-
-
-  public function modify($sql, $data = array()){
-    $result = $this->safeQuery($sql, $data);
+  /**
+  * Modify sql query.
+  * @param string $sql
+  * @param array $data
+  * @return $result
+  */
+  public function modify ( $sql, $data = array() ) {
+    $result = $this ->_safeQuery ($sql, $data);
     if (!$result) {
-      echo "Query: " . $sql . " failed due to " . mysqli_error($this->connection);
+      echo "Query: " . $sql . " failed due to " . mysqli_error($this->_connection);
       exit;
     }
-
     return $result;
   }
 
-
-
-  public function insert($sql, $data = array()){
-    $result = $this->safeQuery($sql, $data);
+  /**
+  * Insert into database
+  * @param string $sql
+  * @param array $data
+  * @return int $lastId
+  */
+  public function insert ($sql, $data = array() ) {
+    $result = $this->_safeQuery($sql, $data);
     if (!$result) {
-      echo "Query: " . $sql . " failed due to " . mysqli_error($this->connection);
+      echo "Query: " . $sql . " failed due to " . mysqli_error($this->_connection);
       exit;
     }
-
-    $lastId = mysqli_insert_id($this->connection);
+    $lastId = mysqli_insert_id($this->_connection);
     return $lastId;
   }
 
-
-
-  public function query($sql, $data = array()){
-    $result = $this->safeQuery($sql, $data);
+  /**
+  * Insert into database
+  * @param string $sql
+  * @param array $data
+  * @return array $records
+  */
+  public function query ($sql, $data = array() ) {
+    $result = $this->_safeQuery($sql, $data);
     if (!$result) {
-      echo "Query: " . $sql . " failed due to " . mysqli_error($this->connection);
+      echo "Query: " . $sql . " failed due to " . mysqli_error($this->_connection);
       exit;
     }
-
     $records = array();
-
     if ($result->num_rows == 0) {
       return $records;
     }
-
-    while($row = $result->fetch_assoc()) {
+    while ($row = $result -> fetch_assoc()) {
       $records[] = $row;
     }
-
     return $records;
   }
 
-
-
-  public function connection(){
-    return $this->connection;
+  /**
+  * Connect to database.
+  * @return $connection
+  */
+  public function connection () {
+    return $this->_connection;
   }
 
-
-
-  public function close(){
-    $this->connection->close();
+  /**
+  * Close database connection.
+  */
+  public function close () {
+    $this->_connection->close();
   }
-
 }

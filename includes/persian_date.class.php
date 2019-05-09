@@ -1,14 +1,34 @@
 <?php
-class persian_date
-{
-	var $persian_month_names = array ('01' => '&#1601;&#1585;&#1608;&#1585;&#1583;&#1740;&#1606;','02' => '&#1575;&#1585;&#1583;&#1740;&#1576;&#1607;&#1588;&#1578;','03' => '&#1582;&#1585;&#1583;&#1575;&#1583;','04' => '&#1578;&#1740;&#1585;','05' => '&#1605;&#1585;&#1583;&#1575;&#1583;','06' => '&#1588;&#1607;&#1585;&#1740;&#1608;&#1585;','07' => '&#1605;&#1607;&#1585;','08' => '&#1570;&#1576;&#1575;&#1606;','09' => '&#1570;&#1584;&#1585;','10' => '&#1583;&#1740;','11' => '&#1576;&#1607;&#1605;&#1606;','12' => '&#1575;&#1587;&#1601;&#1606;&#1583;' );
-	var $persian_day_names = array ('6' => '&#1588;&#1606;&#1576;&#1607;','0' => '&#1740;&#1705;&#1588;&#1606;&#1576;&#1607;','1' => '&#1583;&#1608;&#1588;&#1606;&#1576;&#1607;','2' => '&#1587;&#1607; &#1588;&#1606;&#1576;&#1607;','3' => '&#1670;&#1607;&#1575;&#1585;&#1588;&#1606;&#1576;&#1607;','4' => '&#1662;&#1606;&#1580;&#1588;&#1606;&#1576;&#1607;','5' => '&#1570;&#1583;&#1740;&#1606;&#1607;' );
-	function div($a, $b)
-	{
+class persian_date {
+
+	var $persian_month_names = array (
+		'01' => '&#1601;&#1585;&#1608;&#1585;&#1583;&#1740;&#1606;',
+		'02' => '&#1575;&#1585;&#1583;&#1740;&#1576;&#1607;&#1588;&#1578;',
+		'03' => '&#1582;&#1585;&#1583;&#1575;&#1583;',
+		'04' => '&#1578;&#1740;&#1585;',
+		'05' => '&#1605;&#1585;&#1583;&#1575;&#1583;',
+		'06' => '&#1588;&#1607;&#1585;&#1740;&#1608;&#1585;',
+		'07' => '&#1605;&#1607;&#1585;',
+		'08' => '&#1570;&#1576;&#1575;&#1606;',
+		'09' => '&#1570;&#1584;&#1585;',
+		'10' => '&#1583;&#1740;',
+		'11' => '&#1576;&#1607;&#1605;&#1606;',
+		'12' => '&#1575;&#1587;&#1601;&#1606;&#1583;' );
+
+	var $persian_day_names = array (
+		'6' => '&#1588;&#1606;&#1576;&#1607;',
+		'0' => '&#1740;&#1705;&#1588;&#1606;&#1576;&#1607;',
+		'1' => '&#1583;&#1608;&#1588;&#1606;&#1576;&#1607;',
+		'2' => '&#1587;&#1607; &#1588;&#1606;&#1576;&#1607;',
+		'3' => '&#1670;&#1607;&#1575;&#1585;&#1588;&#1606;&#1576;&#1607;',
+		'4' => '&#1662;&#1606;&#1580;&#1588;&#1606;&#1576;&#1607;',
+		'5' => '&#1570;&#1583;&#1740;&#1606;&#1607;' );
+
+	function div ($a, $b) {
 		return ( int ) ($a / $b);
 	}
-	function gregorian_to_persian($g_y, $g_m, $g_d)
-	{
+
+	function gregorian_to_persian ($g_y, $g_m, $g_d) {
 		$g_days_in_month = array (31,28,31,30,31,30,31,31,30,31,30,31 );
 		$j_days_in_month = array (31,31,31,31,31,31,30,30,30,30,30,29 );
 		$gy = $g_y - 1600;
@@ -41,8 +61,8 @@ class persian_date
 			$jd = '0' . $jd;
 		return array ($jy,$jm,$jd );
 	}
-	function persian_to_gregorian($j_y, $j_m, $j_d)
-	{
+
+	function persian_to_gregorian($j_y, $j_m, $j_d) {
 		$g_days_in_month = array (31,28,31,30,31,30,31,31,30,31,30,31 );
 		$j_days_in_month = array (31,31,31,31,31,31,30,30,30,30,30,29 );
 		$jy = $j_y - 979;
@@ -85,11 +105,11 @@ class persian_date
 			$gd = '0' . $gd;
 		return array ($gy,$gm,$gd );
 	}
-	function to_date($g_date, $input)
-	{
+
+	function to_date($g_date, $input) {
 		$g_date = str_replace ( '-', '', $g_date );
 		$g_date = str_replace ( '/', '', $g_date );
-		
+
 		$g_year = substr ( $g_date, 0, 4 );
 		$g_month = substr ( $g_date, 4, 2 );
 		$g_day = substr ( $g_date, 6, 2 );
@@ -103,7 +123,7 @@ class persian_date
 		if ($input == 'm')
 			return $persian_date [1];
 		if ($input == 'D')
-			return $this->persian_day_names [date ( 'w' )];
+			return $this->persian_day_names [date ( 'w' , strtotime($g_date))];
 		if ($input == 'd')
 			return $persian_date [2];
 		if ($input == 'j')
@@ -120,28 +140,28 @@ class persian_date
 				$persian_n = substr ( $persian_n, 1 );
 			return $persian_n;
 		}
-		
+
 		if ($input == 'Y/m/d')
 			return $persian_date [0] . '/' . $persian_date [1] . '/' . $persian_date [2];
 		if ($input == 'Ymd')
 			return $persian_date [0] . $persian_date [1] . $persian_date [2];
-		
+
 		if ($input == 'y/m/d')
 			return substr ( $persian_date [0], - 2 ) . '/' . $persian_date [1] . '/' . $persian_date [2];
 		if ($input == 'ymd')
 			return substr ( $persian_date [0], - 2 ) . $persian_date [1] . $persian_date [2];
-		
+
 		if ($input == 'Y-m-d')
 			return $persian_date [0] . '-' . $persian_date [1] . '-' . $persian_date [2];
 		if ($input == 'y-m-d')
 			return substr ( $persian_date [0], - 2 ) . '-' . $persian_date [1] . '-' . $persian_date [2];
-		
+
 		if ($input == 'compelete')
 		{
 			$persian_d = $persian_date [2];
 			if ($persian_d {0} == '0')
 				$persian_d = substr ( $persian_d, 1 );
-			return $this->persian_day_names [date ( 'w' )] . ' ' . $persian_d . ' ' . $this->persian_month_names [$persian_date [1]] . ' ' . $persian_date [0];
+			return $this->persian_day_names [date ( 'w' , strtotime($g_date) )] . ' ' . $persian_d . ' ' . $this->persian_month_names [$persian_date [1]] . ' ' . $persian_date [0];
 		}
 		if ($input == 'compelete_without_day_names')
 		{
@@ -151,12 +171,12 @@ class persian_date
 			return $persian_d . ' ' . $this->persian_month_names [$persian_date [1]] . ' ' . $persian_date [0];
 		}
 	}
-	function date($input)
-	{
+
+	function date($input) {
 		return $this->to_date ( date ( 'Y' ) . date ( 'm' ) . date ( 'd' ), $input );
 	}
-	function date_to($j_date)
-	{
+
+	function date_to($j_date) {
 		$j_date = str_replace ( '/', '', $j_date );
 		$j_date = str_replace ( '-', '', $j_date );
 		$j_year = substr ( $j_date, 0, 4 );
@@ -165,8 +185,8 @@ class persian_date
 		$gregorian_date = $this->persian_to_gregorian ( $j_year, $j_month, $j_day );
 		return $gregorian_date [0] . '-' . $gregorian_date [1] . '-' . $gregorian_date [2];
 	}
-	function sec_to_day($sec)
-	{
+
+	function sec_to_day($sec) {
 		$day [s] = bcmod ( $sec - time (), 60 );
 		if (strlen ( $day [s] ) == 1)
 			$day [s] = '0' . $day [s];
@@ -180,4 +200,3 @@ class persian_date
 		return $day;
 	}
 }
-;
