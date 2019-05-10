@@ -14,44 +14,6 @@ if (isset ($update["message"])) {
 else if (isset ($update["callback_query"])){
     callback_message ( $update);
 }
-/*else if(isset($update["inline_query"])){
-    inlineMessage($update);
-}
-
- function inlineMessage($update){
-    $id =$update["inline_query"]['id'];
-    $chat_id =$update["inline_query"]['from']['id'];
-    $query =$update["inline_query"]['query'];
-
-
-    $db = Database::getInstance();
-    $articles = $db->query("SELECT * FROM article WHERE cat=:query LIMIT 10",array(
-    'query' => $query
-    ));
-
-
-
-    $resault_articles = array();
-    foreach($articles as $article){
-
-       $article_title = $article[title];
-        $article_cat = $article[cat];
-        $article_description = $article[description];
-        $article_url = $article[url];
-        $article_text = $article[text];
-         $article_thumb = $article[thumb];
-
-       $resault_articles[] = array("type"=>"article","id"=>microtime()."a","title"=>$article_title,"input_message_content"=>array("message_text"=>$article_text),description=>$article_description,thumb_url=>$article_thumb,url=>$article_url,
-             "reply_markup"=>array(
-            "inline_keyboard"=>array(
-                array(array("text"=>"مشاده کامل خبر","url"=>$article_url))
-            )
-        )
-    );
-    }
-
-     message_request_json("answerInlineQuery",array("inline_query_id"=>$id,"results"=>$resault_articles));
-}*/
 
 /**
 *
@@ -104,19 +66,19 @@ function callback_message($update) {
 */
 function process_message($update) {
 
-  //$message = new Message($update);
+  $message = new Message($update);
 
-  $update_id = $update["update_id"];
-  $chat_id = $update["message"]['chat']['id'];
-  $text = $update["message"]['text'];
-  $message_id = $update["message"]['message_id'];
-  $message_date = $update["message"]['date'];
-  $user_id = $update["message"]['from']['id'];
-  $first_name = $update["message"]['chat']['first_name'];
-  $last_name = $update["message"]['chat']['last_name'];
-  $language_code = $update["message"]['from']['language_code'];
-  $username = $update["message"]['chat']['username'];
-  $type_chat = $update["message"]['chat']['type'];
+  $update_id = $message -> update_id;
+  $chat_id = $message -> chat_id;
+  $text = $message -> text;
+  $message_id = $message -> message_id;
+  $message_date = $message -> message_date;
+  $user_id = $message -> user_id;
+  $first_name = $message -> first_name;
+  $last_name = $message -> last_name;
+  $language_code = $message -> language_code;
+  $username = $message -> username;
+  $type_chat = $message -> type_chat;
 	//previous activity
 	$db = Database::getInstance();
 	$previous_activity_query = $db->query("SELECT *
@@ -152,27 +114,22 @@ function process_message($update) {
               typeChat = '$type_chat', lastUpdate = NOW()
               WHERE userID = '$user_id'");
       }
-      $this_text =
-        "سلام"
-        . $first_name
-        .$last_name
-        ."عزیز به ربات «آماژه» خوش آمدید. امروز"
+      $this_text = " سلام "
+        .$message->first_name
+        .$message->last_name
+        ." عزیز به ربات «آماژه» خوش آمدید. امروز"
         . $today_persian
         ." و الان ساعت "
         . $now_time
         ." به وقت تهران (ایران) است."
-        ."آماژه الان کارهای زیر رو انجام می ده:"
-        ."- فال حافظ (شعر، تفسیر، صوت)"
-        ."- استخاره از قرآن"
-        ."- تحلیل متن"
-        ."اما به زودی خیلی کارهای دیگه هم می‌کنه."
-        ."\n".SIGN;
+        ." آماژه الان کارهای زیر رو انجام می ده:"
+        ."\n- فال حافظ (شعر، تفسیر، صوت)"
+        ."\n- استخاره از قرآن"
+        ."\n- تحلیل متن"
+        ."\nاما به زودی خیلی کارهای دیگه هم می‌کنه.";
       //log
-      $db->query("INSERT INTO
-        log (updateID, messageID, fromID, messageDate, activity,
-          activityNumber, userText)
-        VALUES ('$update_id', '$message_id', '$user_id', '$message_date', 'home',
-          '', '$text')");
+      $message->log_message("home");
+
       $this_keyboard = array (
         array (
           'فال حافظ',
@@ -186,18 +143,7 @@ function process_message($update) {
           'تماس'
         )
       );
-      $reply_markup = array (
-        'resize_keyboard' =>true,
-        'keyboard'=>$this_keyboard
-      );
-      message_request_json("sendMessage", array (
-        'chat_id' => $chat_id,
-        'text' => $this_text,
-        disable_web_page_preview => false,
-        parse_mode => 'HTML',
-        'reply_markup' =>$reply_markup
-        )
-      );
+      $message->send_message ($this_text, $this_keyboard);
     }
     //contact
     elseif ( $text == "تماس" ) {
@@ -210,51 +156,29 @@ function process_message($update) {
         ."\xF0\x9F\x93\xB2 <a href='tg://user?id="
         .ADMIN_ID
         ."'>ارتباط مستقیم با سازنده ربات در تلگرام</a>"
-        ."\xF0\x9F\x92\xBB <a href='http://amaje.ir'>سایت آماژه</a>"
-        ."\n".SIGN;
+        ."\xF0\x9F\x92\xBB <a href='http://amaje.ir'>سایت آماژه</a>";
       //log
-      $db->query("INSERT INTO
-        log (updateID, messageID, fromID, messageDate,
-        activity, activityNumber, userText)
-        VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-        'contact', '', '$text')");
+      $message->log_message("contact");
+
       $this_keyboard = array (
         array (
           'بازگشت به صفحه اول',
           'درباره',
         )
       );
-      $reply_markup = array (
-        'resize_keyboard' => true,
-        'keyboard' => $this_keyboard
-      );
-      message_request_json("sendMessage", array (
-        'chat_id' =>$chat_id,
-        'text'=>$this_text,
-        disable_web_page_preview=>false,
-        parse_mode=>'HTML',
-        'reply_markup' =>$reply_markup)
-      );
+      $message->send_message ($this_text, $this_keyboard);
     }
     //about
-	elseif ($text == "درباره"){
-        $this_text = "آماژه سعی می کنه ایده های خلاقانه رو به اجرا دربیاره.
-  آماژه یعنی اشاره.
-  \n".SIGN;
+	elseif ($text == "درباره") {
+        $this_text = "آماژه سعی می کنه ایده های خلاقانه رو به اجرا دربیاره."
+          ."\nآماژه یعنی اشاره.";
         //log
-        $db->query("INSERT INTO
-                                log (updateID, messageID, fromID, messageDate, activity, activityNumber, userText)
-                                VALUES ('$update_id', '$message_id', '$user_id', '$message_date', 'about', '', '$text')");
+        $message->log_message("about");
+
         $this_keyboard = array(
             array('بازگشت به صفحه اول','تماس')
         );
-        $reply_markup = array(
-            'resize_keyboard' =>true,
-            'keyboard'=>$this_keyboard
-        );
-        message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>$this_text,disable_web_page_preview=>false,parse_mode=>'HTML',
-            'reply_markup' =>$reply_markup
-        ));
+        $message->send_message ($this_text, $this_keyboard);
     }
 
 	//fal_hafez_main
@@ -266,29 +190,25 @@ function process_message($update) {
   تو را به خدا و به شاخ نباتت قسم می‌دهم که هر چه صلاح و مصلحت می‌بینی برایم آشکار و آرزوی مرا برآورده سازی. ✅
   [شاخ نبات، معشوق حافظ بوده است].
   حالا به کاری که می‌خواهید بکنید فکر کنید (نیت کنید) و فال بگیرید.
-  (دکمه ی «فال بگیر» را بزنید).
-  \n".SIGN;
+  (دکمه ی «فال بگیر» را بزنید).";
         //log
-        $db->query("INSERT INTO
-                                log (updateID, messageID, fromID, messageDate, activity, activityNumber, userText)
-                                VALUES ('$update_id', '$message_id', '$user_id', '$message_date', 'fal_hafez_main', '', '$text')");
+        $message->log_message("fal_hafez_main");
+
         $this_keyboard = array(
             array('آخرین فال های حافظ من','فال بگیر'),
 			array('بازگشت به صفحه اول')
         );
-        $reply_markup = array(
-            'resize_keyboard' =>true,
-            'keyboard'=>$this_keyboard
-        );
-        message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>$this_text,disable_web_page_preview=>false,parse_mode=>'HTML',
-            'reply_markup' =>$reply_markup
-        ));
+        $message->send_message ($this_text, $this_keyboard);
     }
 
 	//fal_hafez
 	elseif ($text == "فال بگیر") {
-        $fal_hafez_query = $db->query("SELECT * FROM poetry LEFT JOIN poetryInterpretation ON poetry.ID = poetryInterpretation.poetryID
-                                        ORDER BY RAND() LIMIT 1");
+        $fal_hafez_query = $db->query("SELECT *
+          FROM poetry
+          LEFT JOIN poetryInterpretation
+          ON poetry.ID = poetryInterpretation.poetryID
+          ORDER BY RAND()
+          LIMIT 1");
         $poetry = $fal_hafez_query[0]['poetry'];
         $title = $fal_hafez_query[0]['title'];
         $interpretation = $fal_hafez_query[0]['interpretation'];
@@ -296,26 +216,18 @@ function process_message($update) {
         $poetry_number = $fal_hafez_query[0]['poetryNumber'];
         $audio_post_number = $poetry_number + 1;
         $this_text = "<pre>\xF0\x9F\x93\x96  شعر:</pre>
-  <a href='https://t.me/Cxp3adu/$audio_post_number'>" . "&#160;</a>
-  $poetry
-  <pre>\n\xE2\x9C\xA8 تفسیر: \n</pre>
-  $interpretation
-  \n فالتان را گوش کنید.🔈 \n"
-              .SIGN;
-		//log
-        $db->query("INSERT INTO
-                                log (updateID, messageID, fromID, messageDate, activity, activityNumber, userText)
-                                VALUES ('$update_id', '$message_id', '$user_id', '$message_date', 'fal_hafez', '$poetry_number', '$text')");
+          <a href='https://t.me/Cxp3adu/$audio_post_number'>" . "&#160;</a>
+          $poetry
+          <pre>\n\xE2\x9C\xA8 تفسیر: \n</pre>
+          $interpretation
+          \n فالتان را گوش کنید.🔈";
+    		//log
+        $message->log_message("fal_hafez", $poetry_number);
+
         $this_keyboard = array(
             array('بازگشت به صفحه اول','بازگشت به صفحه فال')
         );
-        $reply_markup = array(
-            'resize_keyboard' =>true,
-            'keyboard'=>$this_keyboard
-        );
-        message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>$this_text,disable_web_page_preview=>false,parse_mode=>'HTML',
-            'reply_markup' =>$reply_markup
-        ));
+        $message->send_message ($this_text, $this_keyboard);
     }
 
 	//last_fal_hafez
@@ -373,28 +285,15 @@ function process_message($update) {
 			}
 		}
 		//log
-    $db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-      activity, activityNumber, userText)
-      VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-      'last_fal_hafez', '', '$text')");
+    $message->log_message("last_fal_hafez");
+
 		$this_keyboard = array (
       array (
         'بازگشت به صفحه اول',
         'بازگشت به صفحه فال',
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' => true,
-      'keyboard' => $this_keyboard,
-    );
-		message_request_json("sendMessage", array (
-      'chat_id' => $chat_id,
-      'text' => $this_text,
-      disable_web_page_preview => false,
-      parse_mode => 'HTML',
-      'reply_markup' => $reply_markup,
-    ));
+    $message->send_message ($this_text, $this_keyboard);
 	}
 	//estekhare_main
 	elseif ($text == "استخاره" || $text == "بازگشت به صفحه استخاره") {
@@ -408,23 +307,15 @@ function process_message($update) {
   <a href='http://www.erfan.ir/farsi/sahife/nsm_proj/nahgol/display/display.php?Vr_page=184'>دعای 33 صحیفه سجادیه با ترجمه‌ی حسین انصاریان</a>
 
   در ربات آماژه، مانند روش‌های قدیمی استخاره با قرآن، نه حالت برای استخاره‌ی شما وجود دارد که به ترتیب عبارتند از: «خیلی خیلی خوب»، «خیلی خوب»، «خوب»، «میانه خوب»، «میانه»، «میانه بد»، «بد»، «خیلی بد» و «خیلی خیلی بد»
-  (پس از نیت کردن، دکمه ی «استخاره بگیر» را بزنید).
-  \n".SIGN;
+  (پس از نیت کردن، دکمه ی «استخاره بگیر» را بزنید).";
         //log
-        $db->query("INSERT INTO
-                                log (updateID, messageID, fromID, messageDate, activity, activityNumber, userText)
-                                VALUES ('$update_id', '$message_id', '$user_id', '$message_date', 'estekhare_main', '', '$text')");
+        $message->log_message("estekhare_main");
+
         $this_keyboard = array(
             array('آخرین استخاره های من','استخاره بگیر'),
-			array('بازگشت به صفحه اول')
+            array('بازگشت به صفحه اول')
         );
-        $reply_markup = array(
-            'resize_keyboard' =>true,
-            'keyboard'=>$this_keyboard
-        );
-        message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>$this_text,disable_web_page_preview=>true,parse_mode=>'HTML',
-            'reply_markup' =>$reply_markup
-        ));
+        $message->send_message ($this_text, $this_keyboard);
     }
 
 	//estekhare
@@ -440,7 +331,10 @@ function process_message($update) {
     $estekhare_file_id = $estekhare_query[0]['fileID'];
     $estekhare_quranPage = $estekhare_query[0]['quranPage'];
     $forwardFromMessageID = $estekhare_query[0]['forwardFromMessageID'];
-    $dead_query = $db->query("SELECT * FROM deads ORDER BY RAND() LIMIT 1");
+    $dead_query = $db->query("SELECT *
+      FROM deads
+      ORDER BY RAND()
+      LIMIT 1");
     $dead = $dead_query[0]['deadName'];
     $estekhare_interpretation = $estekhare_query[0]['interpretation'];
     $estekhare_salavat = "\xF0\x9F\x99\x8F لطفا برای شادی روح "
@@ -452,30 +346,15 @@ function process_message($update) {
       <pre>$estekhare_salavat</pre>
       \n".SIGN;
     //log
-    $db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-      activity, activityNumber, userText)
-      VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-      'estekhare', '$estekhare_quranPage', '$text')");
+    $message->log_message("estekhare_main", $estekhare_quranPage);
+
     $this_keyboard = array (
       array (
         'بازگشت به صفحه اول',
         'بازگشت به صفحه استخاره',
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' =>true,
-      'keyboard'=>$this_keyboard,
-    );
-    /* message_request_json("sendPhoto", array('chat_id' =>$chat_id,photo=>$estekhare_file_id,
-    'caption'=>$this_text, 'reply_markup' =>$reply_markup
-    ));*/
-    message_request_json("sendMessage", array (
-      'chat_id' =>$chat_id,
-      'text'=>$this_text,
-      'parse_mode' => 'HTML',
-      'reply_markup' =>$reply_markup
-    ));
+    $message->send_message ($this_text, $this_keyboard);
   }
 	//last_estekhare
 	elseif ($text == "آخرین استخاره های من") {
@@ -515,76 +394,32 @@ function process_message($update) {
 			}
 		}
 		//log
-    $db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-        activity, activityNumber, userText)
-      VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-        'last_estekhare', '', '$text')");
+    $message->log_message("last_estekhare");
+
 		$this_keyboard = array (
       array (
         'بازگشت به صفحه استخاره',
         'بازگشت به صفحه اول'
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' =>true,
-      'keyboard'=>$this_keyboard
-    );
-		message_request_json("sendMessage", array (
-      'chat_id' =>$chat_id,
-      'text'=>$this_text,
-      disable_web_page_preview=>false,
-      parse_mode=>'HTML',
-      'reply_markup' =>$reply_markup
-    ));
+    $message->send_message ($this_text, $this_keyboard);
 	}
 	//text_analysis_main
 	elseif ($text == "تحلیل متن" || $text == "بازگشت به صفحه تحلیل متن") {
     $this_text = "🔧⚒در حال ساخت [آزمایشی] 🔧⚒
     متن خود را تحلیل کنید!
-    کافیه متن خودتون رو همین جا بفرستید (فقط در قالب متن).
-    \n".SIGN;
+    کافیه متن خودتون رو همین جا بفرستید (فقط در قالب متن).";
     //log
-    $db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-      activity, activityNumber, userText)
-      VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-      'text_analysis_main', '', '$text')");
+    $message->log_message("text_analysis_main");
+
     $this_keyboard = array (
       array(
         'بازگشت به صفحه اول',
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' => true,
-      'keyboard' => $this_keyboard
-    );
-    message_request_json("sendMessage", array (
-      'chat_id' =>$chat_id,
-      'text'=>$this_text,
-      disable_web_page_preview=>false,
-      parse_mode=>'HTML',
-      'reply_markup' =>$reply_markup
-    ));
+    $message->send_message ($this_text, $this_keyboard);
   }
-	//prosody
-	/*elseif ($text = "تحلیل شعر") {
-		//log
-        $db->query("INSERT INTO
-                                log (updateID, messageID, fromID, messageDate, activity, activityNumber, userText)
-                                VALUES ('$update_id', '$message_id', '$user_id', '$message_date', 'prosody', '', '$text')");
-		$this_text = prosody();
-		$this_keyboard = array(
-            array('بازگشت به صفحه اول')
-        );
-        $reply_markup = array(
-            'resize_keyboard' =>true,
-            'keyboard'=>$this_keyboard
-        );
-		message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>$this_text,disable_web_page_preview=>false,parse_mode=>'HTML',
-            'reply_markup' =>$reply_markup
-        ));
-	}*/
+
 	//text_analysis
 	elseif ($previous_activity == "text_analysis_main") {
 		//number of characters
@@ -638,83 +473,58 @@ function process_message($update) {
       .$sorted_all_words_number
       ."\n تعداد تکرار هر کاراکتر (حداکثر 10 کاراکتر پرتکرار شمرده می‌شود): \n"
       .$sorted_all_characters_number
-      ."\n اگر می خواهید متن دیگری وارد کنید روی «بازگشت  به صفحه تحلیل متن» بزنید.
-      \n".SIGN;
+      ."\n اگر می خواهید متن دیگری وارد کنید روی «بازگشت  به صفحه تحلیل متن» بزنید.";
 		//log
-		$db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-      activity, activityNumber, userText, botText)
-			VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-      'text_analysis', '$estekhare_quranPage', '$text', '$this_text')");
+    $message->log_message("text_analysis", "", $this_text);
+
 		$this_keyboard = array (
       array (
         'بازگشت به صفحه اول',
         'بازگشت به صفحه تحلیل متن',
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' =>true,
-      'keyboard'=>$this_keyboard
-    );
-    message_request_json ( "sendMessage", array (
-      'chat_id' =>$chat_id,
-      'text'=>$this_text,
-      disable_web_page_preview=>false,
-      parse_mode=>'HTML',
-      'reply_markup' =>$reply_markup
-    ));
+    $message->send_message ($this_text, $this_keyboard);
 	}
 	//contact_admin
 	elseif ($previous_activity == "contact") {
-		$this_text .= "پیام شما به دست ما رسید و اگر نیاز به پاسخ داشته باشد، در اسرع وقت به آن پاسخ خواهیم داد.
-      \n".SIGN;
+		$this_text .= "پیام شما به دست ما رسید "
+      ."و اگر نیاز به پاسخ داشته باشد، "
+      ."در اسرع وقت به آن پاسخ خواهیم داد.";
 		//log
-		$db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-      activity, activityNumber, userText, botText)
-			VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-      'contact_admin', '$estekhare_quranPage', '$text', '$this_text')");
+    $message->log_message("contact_admin");
+
 		$this_keyboard = array (
       array (
         'تماس',
         'بازگشت به صفحه اول',
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' =>true,
-      'keyboard'=>$this_keyboard
-    );
-    message_request_json("sendMessage", array (
-      'chat_id' =>$chat_id,
-      'text'=>$this_text,
-      disable_web_page_preview=>false,
-      parse_mode=>'HTML',
-      'reply_markup' =>$reply_markup
-    ));
+    $message->send_message ($this_text, $this_keyboard);
 		//send user text to admin
-		$text_contact_admin .=
-    	"پیامی از یک کاربر بات آماژه:
-    	شناسه کاربر: " .$user_id.
-    	"\n". "نام و نام خانوادگی کاربر: " .$first_name. " " .$last_name.
-    	"\n". "نام کاربری: @" .$username.
-    	"\n" . "پیام کاربر: " ." \n "
-    	.$text .
-    	"\n".SIGN;
-    message_request_json("sendMessage", array (
-      'chat_id' =>ADMIN_ID,
-      'text'=>$text_contact_admin,
-      parse_mode=>'HTML'
-    ));
+		$text_contact_admin =
+    	"پیامی از یک کاربر بات آماژه:"
+    	."شناسه کاربر: "
+      .$user_id
+    	."\n"
+      ."نام و نام خانوادگی کاربر: "
+      .$first_name
+      . " "
+      .$last_name
+    	."\n"
+      ."نام کاربری: @"
+      .$username
+    	."\n"
+      ."پیام کاربر: "
+      ."\n "
+    	.$text;
+    $message->send_message ($this_text, $this_keyboard, ADMIN_ID);
 	}
 	// !!WRONG!!
-	else{
+	else {
     //log
-    $db->query("INSERT INTO
-      log (updateID, messageID, fromID, messageDate,
-      activity, activityNumber, userText)
-      VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
-      'wrong', '', '$text')");
-    $this_text = "اشتباهه!\n".SIGN;
+    $message->log_message("wrong");
+
+    $this_text = "اشتباهه!";
     $this_keyboard = array (
       array (
         'فال حافظ',
@@ -728,38 +538,7 @@ function process_message($update) {
         'تماس',
       )
     );
-    $reply_markup = array (
-      'resize_keyboard' =>true,
-      'keyboard'=>$this_keyboard
-    );
-    message_request_json("sendMessage", array (
-      'chat_id' =>$chat_id,
-      'text'=>$this_text,
-      disable_web_page_preview=>false,
-      parse_mode=>'HTML',
-      'reply_markup' =>$reply_markup
-    ));
+    $message->send_message ($this_text, $this_keyboard);
   }
-  /*
-  //Temp
-  if ($user_id == ADMIN_ID) {
-      $file_id = $update["message"]["photo"]["0"]["file_id"];
-      $forward_from_message_id = $update["message"]["forward_from_message_id"];
-      $message_id = $update["message"]["message_id"];
-      $text = "forward id: ".$forward_from_message_id." -- file ID: ".$file_id;
-
-      $db = Database::getInstance();
-      $insert = $db->query("INSERT INTO
-                                  forwardMesaages (forwardFromMessage, fileID)
-                                  VALUES ('$forward_from_message_id', '$file_id')");
-      message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>$text,
-          disable_web_page_preview=>false,parse_mode=>'HTML'
-      ));
-  } else {
-      message_request_json("sendMessage", array('chat_id' =>$chat_id,'text'=>'ربات آماژه در حال بروزرسانی است. لطفا یک ساعت دیگر مراجعه کنید.',
-          disable_web_page_preview=>false,parse_mode=>'HTML'
-      ));
-
-  }*/
 }
 ?>
