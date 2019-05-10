@@ -31,7 +31,7 @@ class Database {
       echo "Connection failed: " . mysqli_connect_error();
       exit;
     }
-    $this ->_connection ->query ("SET NAMES 'utf8'");
+    $this ->_connection ->query ("SET NAMES 'utf8mb4'");
   }
 
   /**
