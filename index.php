@@ -449,8 +449,8 @@ function contact_admin ($user_id, $first_name, $last_name, $username, $text) {
     ."پیام کاربر: "
     ."\n "
     .$text;
-  $message = new Message;
-  $message->send_message ($text_contact_admin, $return_array ['this_keyboard'], ADMIN_ID);
+  $message_to_admin = new Message;
+  $message_to_admin->send_message ($text_contact_admin, $return_array ['this_keyboard'], ADMIN_ID);
   return $return_array;
 }
 
@@ -504,9 +504,9 @@ function process_message($update) {
   //contact
   elseif ( $text == "تماس" ) {
     $return_array = contact ();
-    $message->send_message ($return_array['this_text'],
+    $message -> send_message ($return_array['this_text'],
       $return_array['this_keyboard']);
-    $message->insert_log_message ("contact");
+    $message -> insert_log_message ("contact");
   }
   //about
   elseif ($text == "درباره") {
@@ -520,7 +520,7 @@ function process_message($update) {
     $return_array = fal_hafez_main ();
     $message->send_message ($return_array['this_text'],
       $return_array['this_keyboard']);
-    $message->insert_log_message ("fal_hafez_main");
+    $message -> insert_log_message ("fal_hafez_main");
   }
 	//fal_hafez
 	elseif ($text == "فال بگیر") {
@@ -581,7 +581,8 @@ function process_message($update) {
 	// !!WRONG!!
 	else {
     $return_array = wrong ();
-    $message->send_message ($this_text, $this_keyboard);
+    $message->send_message ($return_array['this_text'],
+      $return_array['this_keyboard']);
     $message->insert_log_message ("wrong");
   }
 }

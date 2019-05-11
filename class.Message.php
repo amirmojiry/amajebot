@@ -75,7 +75,6 @@ class Message {
       activity, activityNumber, userText, botText)
       VALUES ('$update_id', '$message_id', '$user_id', '$message_date',
       '$activity', '$activity_number', '$text', '$bot_text')");
-    $db->close();
   }
 
   /**
@@ -126,6 +125,5 @@ class Message {
       LIMIT 1");
   	return $previous_activity_query[0]['activity'];
   }
-
 
 }
